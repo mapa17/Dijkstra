@@ -44,14 +44,15 @@ int main(int argc, char *argv[])
 		dijkstra(&G, 0, 0);
 	runtime = tack();
 
-	char *b;
-	b = malloc(G.N * 5);
-	if(b == NULL) {perror("malloc"); exit(EXIT_FAILURE); }
-	sprintf(b,"\nLowest distances!\nD=[");
-	for(i = 0; i<G.N; i++){
-		sprintf(&b[strlen(b)], "%d,", G.D[i]);
-	}
-	printf("%s]\n", b);
+//
+//	char *b;
+//	b = malloc(G.N * 5);
+//	if(b == NULL) {perror("malloc"); exit(EXIT_FAILURE); }
+//	sprintf(b,"\nLowest distances!\nD=[");
+//	for(i = 0; i<G.N; i++){
+//		sprintf(&b[strlen(b)], "%d,", G.D[i]);
+//	}
+//	printf("%s]\n", b);
 
 	printf("Was working for [%f] sec.\n",runtime);
 
