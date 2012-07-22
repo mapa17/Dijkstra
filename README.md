@@ -2,7 +2,7 @@ Dijkstra
 ========
 16.7.2012
 
-Sequencial and parallel Dijkstar Implementaiton using OMP and OpenMPI
+Sequencial and parallel Dijkstar Implementaiton using OpenMP and OpenMPI
 
 Compilation and execution
 -------------------------
