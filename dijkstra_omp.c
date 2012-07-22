@@ -128,11 +128,8 @@ void dijkstra(graph* G, long initial_node, char debug)
 			printf("It[%d] aN [%d]",i, aN); printStatus(G); printf("\n");
 		}
 
-		#pragma omp parallel shared(aN, G)
-		{
-
 		//Find all nodes connected to aN
-		#pragma omp parallel for schedule(runtime)
+		#pragma omp paralle for schedule(runtime)
 		for(j=0;j<G->N;j++){
 			if( (G->node[aN][j] != NO_CONN) ){
 				if( (G->D[aN] + G->node[aN][j]) < G->D[j] ){
@@ -141,7 +138,6 @@ void dijkstra(graph* G, long initial_node, char debug)
 			}
 		}
 
-		}
 		aN = getNextNode(G);
 	}
 	//printf("Finished Dijkstra\n");

@@ -17,7 +17,7 @@
 
 
 struct timeval start;
-char *b;
+char *b = NULL;
 
 void tick(void){
 	gettimeofday(&start, NULL);
@@ -36,7 +36,8 @@ void generateTestGraph(graph* G)
 {
 	char* p;
 
-	generateGraph(6,0,G, 1);
+	generateEmptyGraph(6,G);
+	//generateGraph(6,0,G,1);
 	p = &G->node[0][0];
 	*p = 0; p++; *p=40; p++; *p=15; p++; *p=-1; p++; *p=-1; p++; *p=-1;
 
@@ -58,6 +59,38 @@ void generateTestGraph(graph* G)
 
 #define MAX_EDGE_WEIGTH 100
 
+void generateEmptyGraph(long N, graph *G)
+{
+	int i;
+
+	assert((N > 0) && "N has to be bigger than zero!" );
+
+	G->N = N;
+	G->D = (int*)malloc(sizeof(int) * G->N );
+	if(G->D == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
+	G->visited = (char*)malloc(sizeof(char) * G->N);
+	if(G->visited == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
+
+	//Ensure continues data array (for OpenMPI send)
+	char* temp;
+	temp = (char*) malloc(G->N*G->N);
+	if(temp == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
+	G->node = (char**)malloc(sizeof(char*) * G->N);
+	if(G->node == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
+	for(i = 0; i < G->N; i++){
+		G->node[i] = &temp[i*G->N];
+	}
+}
+
+void enableDebug(long N)
+{
+	b = malloc(10 * (N*N) + 400);
+	if(b == NULL){
+		printf("No memory for debug messages!");
+		return;
+	}
+}
+
 void generateGraph(long N, int randInit, graph *G, char debug)
 {
 	long linkCnt;
@@ -68,32 +101,9 @@ void generateGraph(long N, int randInit, graph *G, char debug)
 	assert((N > 0) && "N has to be bigger than zero!" );
 	assert((randInit >= 0) && "randInit has to be bigger than zero!" );
 
-	G->N = N;
-	G->D = (long*)malloc(sizeof(long) * G->N );
-	if(G->D == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
-	G->visited = (long*)malloc(sizeof(long) * G->N);
-	if(G->visited == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
-	G->node = (char**)malloc(sizeof(char*) * G->N);
-	if(G->node == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
-	for(i = 0; i < G->N; i++){
-		G->node[i] = (char*)malloc(sizeof(char) * G->N);
-		if(G->node[i] == NULL) { perror("malloc"); exit(EXIT_FAILURE); }
-	}
-
-	if(debug)
-	{
-		b = malloc(10 * (G->N*G->N) + 400);
-		if(b == NULL){
-			printf("No memory for debug messages!");
-			return;
-		}
-	}else {
-		b = NULL;
-	}
-
-
 	srand(randInit);
 
+	generateEmptyGraph(N, G);
 	resetGraph(G);
 
 	//Initialize Matrix
@@ -165,19 +175,37 @@ long getNextNode(graph* G)
 		}
 	}
 
+	return nextNode;
+}
 
-//	if(nextNode == -1)
-//	{
-//
-//	}
+long par_getNextNode(graph* G, long nStart, long nEnd)
+{
+	long i;
+	long minD;
+	long nextNode;
+
+	nextNode = -1;
+	minD = INF;
+
+	//Find unvisited node with lowest Distance to the initial node
+	for(i = nStart; i<nEnd; i++){
+		if( (G->visited[i] == NOT_VISITED) && (G->D[i] < minD) ){
+			minD = G->D[i];
+			nextNode = i;
+		}
+	}
 
 	return nextNode;
 }
+
 
 void printGraph(graph* G)
 {
 	long i,j;
 	//Debug Print
+
+	if(b == NULL)
+		return;
 
 	b[0] = 0;
 	printf("       ");
@@ -206,6 +234,9 @@ void printStatus(graph* G)
 {
 	long i,k;
 	//Debug Print
+
+	if(b == NULL)
+		return;
 
 	b[0] = 0;
 	sprintf(b,"D=[");
