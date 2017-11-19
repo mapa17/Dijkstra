@@ -40,4 +40,4 @@ mpirun -n 8 ./dijkstra_ompMPI 1000 19
 Blame
 -----
 
-Author: Pasieka Manuel , mapa17@posgrado.upv.es
+Author: Pasieka Manuel , manuel.pasieka@protonmail.ch
